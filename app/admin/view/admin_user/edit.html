@@ -1,0 +1,101 @@
+{extend name="/includes/base" /}
+
+{block name="title"}编辑后台管理员{/block}
+
+{block name="content"}
+<div class="layui-col-md12">
+    <div class="layui-card">
+        <div class="layui-card-header">编辑后台管理员</div>
+        <div class="layui-card-body" pad15>
+            <div class="layui-form" lay-filter="">
+                <form class="layui-form form-container" action="{:url('admin/admin_user/update')}" method="post">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">用户名</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="username" value="{$admin_user.username}" required lay-verify="required" placeholder="请输入用户名" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">密码</label>
+                        <div class="layui-input-inline">
+                            <input type="password" name="password" value="" placeholder="请输入密码" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">重复密码</label>
+                        <div class="layui-input-inline">
+                            <input type="password" name="confirm_password" value=""  placeholder="请再次输入密码" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">状态</label>
+                        <div class="layui-input-inline">
+                            <input type="radio" name="status" value="1" title="启用" checked="checked">
+                            <input type="radio" name="status" value="0" title="禁用">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">所属权限组</label>
+                        <div class="layui-input-inline">
+                            <select name="group_id" lay-verify="required">
+                                <option value="">请选择权限组</option>
+                                {foreach $auth_group as $key => $vo } 
+                                <option value="{$vo.id}" {if $auth_group_access and ($vo.id == $auth_group_access.group_id)}selected{/if}>{$vo.title}</option>
+                                {/foreach} 
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <input type="hidden" name="id" value="{$admin_user.id}">
+                            <button class="layui-btn" lay-submit lay-filter="admin_user">保存</button>
+                            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{/block}
+
+{block name="script"}
+<script type="text/javascript">
+layui.use(['layer', 'form'], function() {
+    var layer = layui.layer;
+    var form = layui.form;
+
+       //监听提交
+    form.on('submit(admin_user)', function(data) {
+        $.ajax({
+            type: 'POST',
+            url: "{:url('admin/admin_user/update')}",
+            data: data.field,
+            dataType: 'json',
+            success: function(msg) {
+                if (msg.code == 1) {
+                    layer.msg(msg.msg, { icon: 1 }, function() {
+                        location.href = "{:url('admin/admin_user/index')}";
+                    });
+                } else {
+                    layer.msg(msg.msg, { icon: 2 });
+                }
+            },
+            error: function(XMLHttpRequest, textStatus, errorThrown) {
+                //console.log(XMLHttpRequest.responseJSON.errors);
+                // 状态码
+                //console.log(XMLHttpRequest.status);
+                // 状态
+                //console.log(XMLHttpRequest.readyState);
+                // 错误信息   
+                //console.log(textStatus);
+            }
+        });
+        return false;
+    });
+
+});
+</script>
+{/block}

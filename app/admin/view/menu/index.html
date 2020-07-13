@@ -1,0 +1,101 @@
+{extend name="/includes/base" /}
+
+{block name="title"}菜单{/block}
+
+{block name="css"}
+    <link rel="stylesheet" href="{__STATIC_PATH}/css/treeTable.css" media="all">
+{/block}
+
+{block name="content"}
+<div class="layui-card">
+    <div class="layui-card-body">
+        <div class="demo-side">
+            <table id="demoTreeTb"></table>
+        </div>
+        <!-- 表格操作列 -->
+        <script type="text/html" id="tbBar">
+            <a class="layui-btn layui-btn-mini layui-btn-xs" lay-event="add">添加子菜单</a>
+            <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit">修改</a>
+            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+        </script>
+    </div>
+</div>
+{/block}
+
+{block name="script"}
+<script type="text/javascript">
+layui.use(['layer', 'util','treeTable'], function() {
+    var $ = layui.jquery;
+    var layer = layui.layer;
+    var util = layui.util;
+    var treeTable = layui.treeTable;
+
+    // 渲染表格
+    var insTb = treeTable.render({
+        elem: '#demoTreeTb',
+        url: "{:url('admin/menu/data')}",
+        toolbar: 'default',
+        tree: {
+            iconIndex: 2,
+            isPidData: true,
+            idName: 'id',
+            pidName: 'pid'
+        },
+        defaultToolbar: ['filter', 'print', 'exports', {
+            title: '提示',
+            layEvent: 'LAYTABLE_TIPS',
+            icon: 'layui-icon-tips'
+        }],
+        cols: [
+            [
+                {type: 'checkbox'},
+                {field: 'id', title: 'ID',width:60},
+                {field: 'title',title:'菜单名称',},
+                {field: 'name', title: '控制方法名'},
+                {field: 'sort',title:'排序',width:100},
+                {field: 'status',templet: '<p>{{d.status? "显示" : "隐藏"}}</p>',title:'状态',width:100},
+                {align: 'center', toolbar: '#tbBar', title: '操作'}
+            ]
+        ],
+        style: 'margin-top:0;'
+    });
+
+    // 工具列点击事件
+        treeTable.on('tool(demoTreeTb)', function (obj) {
+            var event = obj.event;
+            var id  = obj.data.id;
+
+            if (event === 'del') {
+                layer.confirm('确认删除吗？', function(index) {
+                    $.post("{:url('admin/menu/destory')}", { id: id }, function(result) {
+                        if (result.code == 1) {
+                            obj.del(); //删除对应行（tr）的DOM结构
+                        }
+                        layer.close(index);
+                        layer.msg(result.msg, { icon: 6 })
+                    });
+                });
+            } else if (event === 'edit') {
+                location.href = '/admin/menu/edit/id/' + obj.data.id
+            } else if (event === 'add') {
+                location.href = '/admin/menu/add/id/' + obj.data.id
+            }
+        });
+
+        // 头部工具栏点击事件
+        treeTable.on('toolbar(demoTreeTb)', function (obj) {
+            switch (obj.event) {
+                case 'add':
+                    location.href = "{:url('admin/menu/add')}";
+                    break;
+                case 'delete':
+                    layer.msg('删除');
+                    break;
+                case 'update':
+                    layer.msg('编辑');
+                    break;
+            }
+        });
+});
+</script>
+{/block}

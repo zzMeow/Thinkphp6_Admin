@@ -1,0 +1,78 @@
+{extend name="/includes/base" /}
+
+{block name="title"}编辑权限组{/block}
+
+{block name="content"}
+<div class="layui-col-md12">
+    <div class="layui-card">
+        <div class="layui-card-header">编辑权限组</div>
+        <div class="layui-card-body" pad15>
+            <div class="layui-form" lay-filter="">
+                <form class="layui-form form-container" action="{:url('admin/auth_group/update')}" method="post">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">名称</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="title" value="{$auth_group.title}" required lay-verify="required" placeholder="请输入权限组名称" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">状态</label>
+                        <div class="layui-input-block">
+                            <input type="radio" name="status" value="1" title="启用" {if condition="$auth_group.status ==1" } checked="checked" {/if} />
+                            <input type="radio" name="status" value="0" title="禁用" {if condition="$auth_group.status ==0" } checked="checked" {/if} />
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <input type="hidden" name="id" value="{$auth_group.id}">
+                            <button class="layui-btn" lay-submit lay-filter="auth_group">保存</button>
+                            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+{/block}
+
+{block name="script"}
+<script type="text/javascript">
+layui.use(['layer', 'form'], function() {
+    var layer = layui.layer;
+    var form = layui.form;
+
+       //监听提交
+    form.on('submit(auth_group)', function(data) {
+        $.ajax({
+            type: 'POST',
+            url: "{:url('admin/auth_group/update')}",
+            data:data.field,
+            dataType: 'json',
+            success: function(msg) {
+                if (msg.code == 1) {
+                    layer.msg(msg.msg, { icon: 1 }, function() {
+                        location.href = "{:url('admin/auth_group/index')}";
+                    });
+                } else {
+                    layer.msg(msg.msg, { icon: 2 });
+                }
+            },
+            error: function(XMLHttpRequest, textStatus, errorThrown) {
+                //console.log(XMLHttpRequest.responseJSON.errors);
+                // 状态码
+                //console.log(XMLHttpRequest.status);
+                // 状态
+                //console.log(XMLHttpRequest.readyState);
+                // 错误信息   
+                //console.log(textStatus);
+            }
+        });
+        return false;
+    });
+
+});
+</script>
+{/block}

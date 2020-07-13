@@ -1,0 +1,107 @@
+{extend name="/includes/base" /}
+
+{block name="title"}添加权限{/block}
+
+{block name="content"}
+<div class="layui-col-md12">
+    <div class="layui-card">
+        <div class="layui-card-header">添加权限</div>
+        <div class="layui-card-body" pad15>
+            <form class="layui-form">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">选择权限</label>
+                    <div class="layui-input-block">
+                        <div id="LAY-auth-tree-index"></div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" type="submit" lay-submit lay-filter="auth">提交</button>
+                        <button class="layui-btn layui-btn-primary" type="reset">重置</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</div>
+{/block}
+
+{block name="script"}
+<script type="text/javascript">
+layui.use(['layer', 'form','authtree'], function() {
+    var $ = layui.jquery;
+    var authtree = layui.authtree;
+    var layer = layui.layer;
+    var form = layui.form;
+
+    $.ajax({
+            type: 'GET',
+            url: "{:url('admin/auth_group/getAuthData')}",
+            dataType: 'json',
+            success: function(res) {
+                var rules = "{$auth_group.rules}".split(',');
+                var trees = authtree.listConvert(res.data.list, {
+                    primaryKey: 'id'
+                    ,startPid: 0
+                    ,parentKey: 'pid'
+                    ,nameKey: 'name'
+                    ,valueKey: 'id'
+                    ,checkedKey: rules.map(Number)
+                });
+
+                authtree.render('#LAY-auth-tree-index', trees, {
+                    inputname: 'authids[]', 
+                    layfilter: 'lay-check-auth',
+                    theme: 'auth-skin-default', 
+                    themePath: '{__PLUG_PATH}/layui_exts/tree_themes/',
+                    autowidth: true
+                });
+
+            },
+            error: function(XMLHttpRequest, textStatus, errorThrown) {
+                //console.log(XMLHttpRequest.responseJSON.errors);
+                // 状态码
+                //console.log(XMLHttpRequest.status);
+                // 状态
+                //console.log(XMLHttpRequest.readyState);
+                // 错误信息   
+                //console.log(textStatus);
+            }
+        });
+
+       //监听提交
+    form.on('submit(auth)', function(data) {
+        $.ajax({
+            type: 'POST',
+            url: "{:url('admin/auth_group/authSave')}",
+            data: {
+                id: "{$auth_group.id}",
+                auth_ids: authtree.getChecked('#LAY-auth-tree-index')
+            },
+            dataType: 'json',
+            success: function(msg) {
+                if (msg.code == 1) {
+                    layer.msg(msg.msg, { icon: 1 }, function() {
+                        location.href = "{:url('admin/auth_group/index')}";
+                    });
+                } else {
+                    layer.msg(msg.msg, { icon: 2 });
+                }
+            },
+            error: function(XMLHttpRequest, textStatus, errorThrown) {
+                //console.log(XMLHttpRequest.responseJSON.errors);
+                // 状态码
+                //console.log(XMLHttpRequest.status);
+                // 状态
+                //console.log(XMLHttpRequest.readyState);
+                // 错误信息   
+                //console.log(textStatus);
+            }
+        });
+        return false;
+    });
+
+});
+</script>
+{/block}
